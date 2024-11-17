@@ -1,5 +1,3 @@
-# utl-select-date-minus-lag-date-in-days-by-group-using-sas-and-sql-in-r-and-python-muti-language
-Select date minus lag date in days by group using sas and sql in r and python muti language
     %let pgm=utl-select-date-minus-lag-date-in-days-by-group-using-sas-and-sql-in-r-and-python-muti-language;
 
     %stop_submission;
@@ -12,11 +10,17 @@ Select date minus lag date in days by group using sas and sql in r and python mu
 
             SOLUTIONS  (slighly different input. Data is sorted by type date)
 
+               0 elegant hash solution no rqire a sort
+                 Keintz, Mark
+                 mkeintz@outlook.com
                1 sas datastep
                2 r sql
                3 python sql
                4 r tidyverse (not in base -> group_by %>% lag arrange)
 
+    github
+    https://tinyurl.com/5des9c3v
+    https://github.com/rogerjdeangelis/utl-select-date-minus-lag-date-in-days-by-group-using-sas-and-sql-in-r-and-python-muti-language
 
     stackoverflow
     https://tinyurl.com/2yu98j28
@@ -118,6 +122,40 @@ Select date minus lag date in days by group using sas and sql in r and python mu
     /*   6    type3    05/01/2026    24227                                                                                    */
     /*                                                                                                                        */
     /**************************************************************************************************************************/
+    /*___                    _               _
+     / _ \   ___  __ _ ___  | |__   __ _ ___| |__
+    | | | | / __|/ _` / __| | `_ \ / _` / __| `_ \
+    | |_| | \__ \ (_| \__ \ | | | | (_| \__ \ | | |
+     \___/  |___/\__,_|___/ |_| |_|\__,_|___/_| |_|
+
+    */
+
+    data want (drop=_:);
+      set have;
+      call missing(_prior_date);
+      if _n_=1 then do;
+       declare hash h ();
+         h.definekey('type');
+         h.definedata('type','_prior_date');
+         h.definedone();
+      end;
+
+      if h.find()=0 then difdate=date-_prior_date;
+      h.replace(key:type,data:type,data:date);  /*DATE value gets inserted into _PRIOR_DATE in the hash*/
+    run;
+
+    /**************************************************************************************************************************/
+    /*                                                                                                                        */
+    /*ID TYPE    DATEC     DATE DIFDATE                                                                                       */
+    /*                                                                                                                        */
+    /* 1 type1 01/01/2014 19724      .                                                                                        */
+    /* 3 type1 01/06/2015 20094    370                                                                                        */
+    /* 4 type1 07/04/2017 21004    910                                                                                        */
+    /* 2 type2 01/06/2015 20094      .                                                                                        */
+    /* 5 type2 05/10/2018 21314   1220                                                                                        */
+    /* 6 type3 05/01/2026 24227      .                                                                                        */
+    /*                                                                                                                        */
+    /*************************************************************************************************************************
 
     /*                       _       _            _
     / |  ___  __ _ ___    __| | __ _| |_ __ _ ___| |_ ___ _ __
@@ -329,3 +367,4 @@ Select date minus lag date in days by group using sas and sql in r and python mu
      \___|_| |_|\__,_|
 
     */
+
